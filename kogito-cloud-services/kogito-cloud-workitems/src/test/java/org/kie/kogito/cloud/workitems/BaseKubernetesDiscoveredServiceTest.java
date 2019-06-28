@@ -21,6 +21,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.kie.api.runtime.process.WorkItem;
 import org.kie.api.runtime.process.WorkItemManager;
+import org.kie.kogito.cloud.kubernetes.client.DefaultKogitoKubeClient;
+import org.kie.kogito.cloud.kubernetes.client.KogitoKubeConfig;
 
 /**
  * Base class for tests with Kubernetes API. In this scenario, nor Istio or KNative is available.
@@ -44,17 +46,13 @@ public abstract class BaseKubernetesDiscoveredServiceTest {
     }
 
     protected KubernetesClient getClient() {
-
         return server.getClient().inNamespace(MOCK_NAMESPACE);
     }
 
     protected static class TestDiscoveredServiceWorkItemHandler extends DiscoveredServiceWorkItemHandler {
 
-        private final BaseKubernetesDiscoveredServiceTest testCase;
-
         public TestDiscoveredServiceWorkItemHandler(BaseKubernetesDiscoveredServiceTest testCase) {
-            super();
-            this.testCase = testCase;
+            super(new DefaultKogitoKubeClient().withConfig(new KogitoKubeConfig(testCase.getClient())));
         }
 
         @Override
@@ -62,12 +60,6 @@ public abstract class BaseKubernetesDiscoveredServiceTest {
 
         @Override
         public void abortWorkItem(WorkItem workItem, WorkItemManager manager) {}
-
-        @Override
-        protected KubernetesClient getKubeClient() {
-            this.istionGatewayClusterIp = null;
-            return this.testCase.getClient();
-        }
 
     }
 
